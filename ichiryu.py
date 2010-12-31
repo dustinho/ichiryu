@@ -31,20 +31,40 @@ from twisted.python import log
 # system imports
 import time, sys
 
+channel = "whonted"
+logroot = "/home/dustin/ichiryu/wonted-logs/"
 
 class MessageLogger:
     """
     An independent logger class (because separation of application
     and protocol logic is a good thing).
     """
-    def __init__(self, file):
-        self.file = file
+    def __init__(self, logroot, channel):
+        # Open initial log file
+        self.logroot = logroot
+        self.channel = channel
+        self.datestamp = time.strftime("%Y-%m-%d", time.localtime(time.time()))
+        self.file = open(self.logroot + \
+                         self.datestamp + "-" + \
+                         self.channel + ".log", "a")
 
     def log(self, message):
         """Write a message to the file."""
+        # Check if we're on a new date
+        datestamp = time.strftime("%Y-%m-%d", time.localtime(time.time()))
+        if datestamp != self.datestamp:
+            self.datestamp = datestamp
+            self.file.close()
+            self.file = open(self.logroot + \
+                             self.datestamp + "-" + \
+                             self.channel + ".log", "a")
+
         timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
         self.file.write('%s %s\n' % (timestamp, message))
         self.file.flush()
+
+    #def logfile(self,
+        """ Generates the current log file name, path not included2"""
 
     def close(self):
         self.file.close()
@@ -52,18 +72,18 @@ class MessageLogger:
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
-    
-    nickname = "twistedbot"
-    
+
+    nickname = "IchiryuBot"
+
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
-        self.logger = MessageLogger(open(self.factory.filename, "a"))
-        self.logger.log("[connected at %s]" % 
+        self.logger = MessageLogger(self.factory.logroot, self.factory.channel)
+        self.logger.log("[connected at %s]" %
                         time.asctime(time.localtime(time.time())))
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
-        self.logger.log("[disconnected at %s]" % 
+        self.logger.log("[disconnected at %s]" %
                         time.asctime(time.localtime(time.time())))
         self.logger.close()
 
@@ -82,7 +102,7 @@ class LogBot(irc.IRCClient):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
-        
+
         # Check to see if they're sending me a private message
         if channel == self.nickname:
             msg = "It isn't nice to whisper!  Play nice with the group."
@@ -129,9 +149,9 @@ class LogBotFactory(protocol.ClientFactory):
     # the class of the protocol to build when new connection is made
     protocol = LogBot
 
-    def __init__(self, channel, filename):
+    def __init__(self, channel, logroot):
         self.channel = channel
-        self.filename = filename
+        self.logroot = logroot
 
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
@@ -145,12 +165,12 @@ class LogBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
-    
+
     # create factory protocol and application
-    f = LogBotFactory(sys.argv[1], sys.argv[2])
+    f = LogBotFactory(channel, logroot)
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.freenode.net", 6667, f)
+    reactor.connectTCP("irc.rizon.net", 6667, f)
 
     # run bot
     reactor.run()
