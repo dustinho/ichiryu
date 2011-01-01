@@ -31,7 +31,7 @@ from twisted.python import log
 # system imports
 import time, sys
 
-channel = "whonted"
+channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
 
 class MessageLogger:
@@ -44,9 +44,7 @@ class MessageLogger:
         self.logroot = logroot
         self.channel = channel
         self.datestamp = time.strftime("%Y-%m-%d", time.localtime(time.time()))
-        self.file = open(self.logroot + \
-                         self.datestamp + "-" + \
-                         self.channel + ".log", "a")
+        self.file = open(self.logroot + self.logfile(), "a")
 
     def log(self, message):
         """Write a message to the file."""
@@ -55,16 +53,20 @@ class MessageLogger:
         if datestamp != self.datestamp:
             self.datestamp = datestamp
             self.file.close()
-            self.file = open(self.logroot + \
-                             self.datestamp + "-" + \
-                             self.channel + ".log", "a")
+            self.file = open(self.logroot + self.logfile(), "a")
 
         timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
         self.file.write('%s %s\n' % (timestamp, message))
         self.file.flush()
 
-    #def logfile(self,
-        """ Generates the current log file name, path not included2"""
+    def logfile(self):
+        """ Generates the current log file name, path not included"""
+        # Note that the hash mark is stripped from the channel
+        return self.datestamp + "-" + self.channel[1:] + ".log"
+
+    def loglink(self):
+        """ Generate the http link to the logfile """
+        return "http://www.dustinho.com/wonted-logs/" + self.logfile()
 
     def close(self):
         self.file.close()
@@ -74,6 +76,7 @@ class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
     nickname = "IchiryuBot"
+    nicknames = ("IchiryuBot", "Ichiryu", "ichiryu", "ichiryubot")
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -101,7 +104,6 @@ class LogBot(irc.IRCClient):
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
-        self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
         if channel == self.nickname:
@@ -110,10 +112,16 @@ class LogBot(irc.IRCClient):
             return
 
         # Otherwise check to see if it is a message directed at me
-        if msg.startswith(self.nickname + ":"):
-            msg = "%s: I am a log bot" % user
+        if msg.startswith(self.nicknames):
+            loglink = self.logger.loglink()
+            msg = "%s: Logs can be found at % s" % (user, loglink)
             self.msg(channel, msg)
             self.logger.log("<%s> %s" % (self.nickname, msg))
+            return
+
+        # Log messages in the channel
+        if channel == self.factory.channel:
+            self.logger.log("<%s> %s" % (user, msg))
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
