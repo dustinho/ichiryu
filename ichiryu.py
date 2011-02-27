@@ -123,7 +123,6 @@ class LogBot(irc.IRCClient):
         if msg.endswith("imo"):
             self.msg(channel, ".im")
             self.logger.log("<%s> %s" % (self.nickname, msg))
-            return
 
         # Log messages in the channel
         if channel == self.factory.channel:
