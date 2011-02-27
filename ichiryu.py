@@ -119,14 +119,14 @@ class LogBot(irc.IRCClient):
             self.logger.log("<%s> %s" % (self.nickname, msg))
             return
 
-        # Otherwise check to see if it ends with "imo"
-        if msg.endswith("imo"):
-            self.msg(channel, ".im")
-            self.logger.log("<%s> %s" % (self.nickname, msg))
-
         # Log messages in the channel
         if channel == self.factory.channel:
             self.logger.log("<%s> %s" % (user, msg))
+
+        # Check to see if it ends with "imo"
+        if msg.endswith("imo"):
+            self.msg(channel, ".im")
+            self.logger.log("<%s> %s" % (self.nickname, ".im"))
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
