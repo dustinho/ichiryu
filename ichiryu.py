@@ -134,7 +134,7 @@ class LogBot(irc.IRCClient):
         if msg.startswith(self.nicknames):
             loglink = self.logger.loglink()
             my_msg = "%s: Logs can be found at % s" % (user, loglink)
-            self.say(channel, msg)
+            self.say(channel, my_msg)
 
     def say(self, channel, msg):
         self.msg(channel, msg)
