@@ -30,6 +30,11 @@ from twisted.python import log
 
 # system imports
 import time, sys
+import re
+
+OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-0])")
+OMP_LINK = "http://omploader.org/vMmhmZA"
+OMP_LINK_REGEX re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-0])")
 
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
@@ -111,22 +116,29 @@ class LogBot(irc.IRCClient):
             self.msg(user, msg)
             return
 
-        # Otherwise check to see if it is a message directed at me
-        if msg.startswith(self.nicknames):
-            loglink = self.logger.loglink()
-            msg = "%s: Logs can be found at % s" % (user, loglink)
-            self.msg(channel, msg)
-            self.logger.log("<%s> %s" % (self.nickname, msg))
+        if channel != self.factory.channel:
             return
 
         # Log messages in the channel
-        if channel == self.factory.channel:
-            self.logger.log("<%s> %s" % (user, msg))
+        self.logger.log("<%s> %s" % (user, msg))
 
-        # Check to see if it ends with "imo"
+        # imo.im
         if msg.endswith("imo"):
-            self.msg(channel, ".im")
-            self.logger.log("<%s> %s" % (self.nickname, ".im"))
+            self.say(channel, ".im")
+
+        # Respond to ompldr links other than this one with this one.
+        if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
+            self.say(channel, "%s: %s" % (user, OMP_LINK))
+
+        # Otherwise check to see if it is a message directed at me
+        if msg.startswith(self.nicknames):
+            loglink = self.logger.loglink()
+            my_msg = "%s: Logs can be found at % s" % (user, loglink)
+            self.say(channel, msg)
+
+    def say(self, channel, msg):
+        self.msg(channel, msg)
+        self.logger.log("<%s> %s" % (self.nickname, msg))
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
