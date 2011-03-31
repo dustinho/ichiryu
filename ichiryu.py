@@ -32,9 +32,9 @@ from twisted.python import log
 import time, sys
 import re
 
-OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-0])")
+OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-9])")
 OMP_LINK = "http://omploader.org/vMmhmZA"
-OMP_LINK_REGEX re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-0])")
+OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
