@@ -36,6 +36,9 @@ OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-
 OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 
+#somehow get a dict of cardwords:cardlinks
+mtg_links = dict({"1card":"http://cardlink.com/1.jpg","2card":"http://cardlink.com/2.jpg","derpa":"http://derpins.com/derp.jpg"})
+
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
 
@@ -129,6 +132,12 @@ class LogBot(irc.IRCClient):
         # Respond to ompldr links other than this one with this one.
         if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
             self.say(channel, "%s: %s" % (user, OMP_LINK))
+
+        # Respond to messages that end with MTG card name with link to card.
+        for keys in mtg_links:
+            if msg.lower().endswith(keys.lower()):
+                self.say(channel, "%s: %s" % (user, mtg_links.get(keys))
+                #break if we want to only spit out one answer
 
         # Otherwise check to see if it is a message directed at me
         if msg.startswith(self.nicknames):
