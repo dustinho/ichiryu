@@ -1,6 +1,5 @@
-# Copyright (c) 2001-2009 Twisted Matrix Laboratories.
+# COPYRIGHT (C) 2001-2009 Twisted Matrix Laboratories.
 # See LICENSE for details.
-
 
 """
 An example IRC log bot - logs a channel's events to a file.
@@ -22,7 +21,6 @@ connect to, and file to log to, e.g.:
 will log channel #test to the file 'test.log'.
 """
 
-
 # twisted imports
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
@@ -37,7 +35,11 @@ OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 
 #somehow get a dict of cardwords:cardlinks
-mtg_links = dict({"card":"http://cardlink.com/1.jpg","2card":"http://cardlink.com/2.jpg","derpa":"http://derpins.com/derp.jpg"})
+mtg_links = {
+    "card"  : "http://cardlink.com/1.jpg",
+    "2card" : "http://cardlink.com/2.jpg",
+    "derpa" : "http://derpins.com/derp.jpg"
+}
 
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
@@ -136,7 +138,7 @@ class LogBot(irc.IRCClient):
         # Respond to messages that end with MTG card name with link to card.
         for keys in mtg_links:
             if msg.lower().endswith(keys.lower()):
-                self.say(channel, "%s: %s" % (user, mtg_links.get(keys))
+                self.say(channel, "%s: %s" % (user, mtg_links.get(keys)))
                 #break if we want to only spit out one answer
 
         # Otherwise check to see if it is a message directed at me
