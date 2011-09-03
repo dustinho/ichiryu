@@ -33,17 +33,22 @@ import time, sys
 import re
 import pickle
 
-# A function to strip non alpha-numerics from the end of a string, keep only max_length characters from the end (after stripping), and make everything lower case.  This will be used on both the magic dict and incoming messages
+# A function to strip non alpha-numerics from the end of a string, keep only 
+# max_length characters from the end (after stripping), and make everything 
+# lower case.  This will be used on both the magic dict and incoming messages
 def charstrip(string, max_length=False):
     stripped_string = ''
     for char in string[::-1]:
-        if stripped_string != '' and (len(stripped_string) < max_length) or max_length == False:
+        if (stripped_string != '' and 
+            (len(stripped_string) < max_length or max_length == False)):
             stripped_string = char + stripped_string
         if char.isalpha() and stripped_string == '':
             stripped_string = char
     return stripped_string.lower()
 
-# A function that takes a url from cardkingdom.com, and strips out the identifying number (bigger is generally newer), returning that number as an int
+# A function that takes a url from cardkingdom.com, and strips out the 
+# identifying number (bigger is generally newer), returning that number 
+# as an int
 def urlnumber(url):
     return int(url[url.rfind('/')+1:url.rfind('_')])
 
@@ -68,7 +73,8 @@ except:
         if card_name == '':
             continue
         # only keep the card with the largest url number
-        if card_name not in mtg_links or urlnumber(card_url) > urlnumber(mtg_links.get(card_name)):
+        if (card_name not in mtg_links or 
+            (urlnumber(card_url) > urlnumber(mtg_links.get(card_name)))):
             mtg_links[card_name] = card_url
             if len(card_name) > max_card_name_length:
                 max_card_name_length = len(card_name)
@@ -169,11 +175,12 @@ class LogBot(irc.IRCClient):
         if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
             self.say(channel, "%s: %s" % (user, OMP_LINK))
 
-        # New and improved way to respond to messages that end with MTG card name
+        # If a message ends with a magic card name, return url to picture
         stripped_chars = charstrip(msg, max_card_name_length)
         for i in range(len(stripped_chars)):
             if stripped_chars[i:] in mtg_links:
-                self.say(channel, "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
+                self.say(channel, 
+                         "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
                 break # so we only say the longest one
 
         # Otherwise check to see if it is a message directed at me
