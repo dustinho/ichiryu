@@ -20,6 +20,8 @@ connect to, and file to log to, e.g.:
 
 will log channel #test to the file 'test.log'.
 """
+#for the mtg card database
+import json
 
 # twisted imports
 from twisted.words.protocols import irc
@@ -34,12 +36,12 @@ OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-
 OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 
-#somehow get a dict of cardwords:cardlinks
-mtg_links = {
-    "card"  : "http://cardlink.com/1.jpg",
-    "2card" : "http://cardlink.com/2.jpg",
-    "derpa" : "http://derpins.com/derp.jpg"
-}
+#MTG card dict
+mtgjson = open("mtg_cards.json")
+bigmtgdict = json.load(mtgjson)
+mtg_links = {}
+for mtgcard in bigmtgdict:
+    mtg_links[str(mtgcard['name'])] = str(mtgcard['imgUrl'])
 
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
