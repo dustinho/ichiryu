@@ -32,16 +32,40 @@ from twisted.python import log
 import time, sys
 import re
 
+# A function to strip non alpha-numerics from the end of a string, keep only max_length characters, and make everything lower case
+def charstrip(string, max_length):
+    stripped_string = ''
+    for char in string[::-1]:
+        if stripped_string != '' and len(stripped_string) < max_length:
+            stripped_string = char + stripped_string
+        if char.isalpha() and stripped_string == '':
+            stripped_string = char
+    return stripped_string.lower()
+
+# A function that takes a url from cardkingdom.com, and strips out the identifying number (bigger is generally newer), returning that number as an int
+def urlnumber(url):
+    return int(url[url.rfind('/')+1:url.rfind('_')])
+
 OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-9])")
 OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 
 #MTG card dict
-mtgjson = open("mtg_cards.json")
-bigmtgdict = json.load(mtgjson)
+mtg_json = open("mtg_cards.json")
+big_mtg_dict = json.load(mtg_json)
+max_card_name_length = 0
 mtg_links = {}
-for mtgcard in bigmtgdict:
-    mtg_links[str(mtgcard['name'])] = str(mtgcard['imgUrl'])
+for mtg_card in big_mtg_dict:
+    card_name = charstrip(str(mtg_card['name']),9001)
+    card_url = str(mtg_card['imgUrl'])
+    # There's a card with no name
+    if card_name == '':
+        continue
+    # only keep the card with the largest url number
+    if card_name not in mtg_links or urlnumber(card_url) > urlnumber(mtg_links.get(card_name)):
+        mtg_links[card_name] = card_url
+    if len(card_name) > max_card_name_length:
+        max_card_name_length = len(card_name)
 
 channel = "#wonted" # Make sure this has a hash prepended
 logroot = "/home/dustin/ichiryu/wonted-logs/"
@@ -137,11 +161,12 @@ class LogBot(irc.IRCClient):
         if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
             self.say(channel, "%s: %s" % (user, OMP_LINK))
 
-        # Respond to messages that end with MTG card name with link to card.
-        for keys in mtg_links:
-            if msg.lower().endswith(keys.lower()):
-                self.say(channel, "%s: %s" % (user, mtg_links.get(keys)))
-                #break if we want to only spit out one answer
+        # New and improved way to respond to messages that end with MTG card name
+        stripped_chars = charstrip(msg,max_card_name_length)
+        for i in range(len(stripped_chars)):
+            if stripped_chars[i:] in mtg_links:
+                self.say(channel, "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
+                break # so we only say the longest one
 
         # Otherwise check to see if it is a message directed at me
         if msg.startswith(self.nicknames):
