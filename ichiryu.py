@@ -174,7 +174,7 @@ class LogBot(irc.IRCClient):
 
         # If a message ends with a magic card name, return url to picture
         stripped_chars = charstrip(msg, max_card_name_length)
-        for i in range(len(stripped_chars)-2): #minimum of 3-character match
+        for i in range(len(stripped_chars) - 2): # minimum of 3-character match
             if stripped_chars[i:] in mtg_links:
                 self.say(channel, 
                          "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
