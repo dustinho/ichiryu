@@ -50,7 +50,7 @@ def charstrip(string, max_length=False):
 # identifying number (bigger is generally newer), returning that number 
 # as an int
 def urlnumber(url):
-    return int(url[url.rfind('/')+1:url.rfind('_')])
+    return int(url[url.rfind('/') + 1:url.rfind('_')])
 
 OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-9])")
 OMP_LINK = "http://omploader.org/vMmhmZA"
