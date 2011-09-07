@@ -69,9 +69,6 @@ except:
     for mtg_card in big_mtg_dict:
         card_name = charstrip(str(mtg_card['name']))
         card_url = str(mtg_card['imgUrl'])
-        # Get rid of the cards '______' and 'Ow'
-        if len(card_name) <= 2:
-            continue
         # only keep the card with the largest url number
         if (card_name not in mtg_links or 
             (urlnumber(card_url) > urlnumber(mtg_links.get(card_name)))):
@@ -177,7 +174,7 @@ class LogBot(irc.IRCClient):
 
         # If a message ends with a magic card name, return url to picture
         stripped_chars = charstrip(msg, max_card_name_length)
-        for i in range(len(stripped_chars)):
+        for i in range(len(stripped_chars)-2): #minimum of 3-character match
             if stripped_chars[i:] in mtg_links:
                 self.say(channel, 
                          "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
