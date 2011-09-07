@@ -69,8 +69,8 @@ except:
     for mtg_card in big_mtg_dict:
         card_name = charstrip(str(mtg_card['name']))
         card_url = str(mtg_card['imgUrl'])
-        # There's a card with no name
-        if card_name == '':
+        # Get rid of the cards '______' and 'Ow'
+        if len(card_name) <= 2:
             continue
         # only keep the card with the largest url number
         if (card_name not in mtg_links or 
