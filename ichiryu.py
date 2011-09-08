@@ -33,21 +33,21 @@ import time, sys
 import re
 import pickle
 
-# A function to strip non alpha-numerics from the end of a string, keep only 
-# max_length characters from the end (after stripping), and make everything 
+# A function to strip non alpha-numerics from the end of a string, keep only
+# max_length characters from the end (after stripping), and make everything
 # lower case.  This will be used on both the magic dict and incoming messages
 def charstrip(string, max_length=False):
     stripped_string = ''
     for char in string[::-1]:
-        if (stripped_string != '' and 
+        if (stripped_string != '' and
             (len(stripped_string) < max_length or max_length == False)):
             stripped_string = char + stripped_string
         if char.isalpha() and stripped_string == '':
             stripped_string = char
     return stripped_string.lower()
 
-# A function that takes a url from cardkingdom.com, and strips out the 
-# identifying number (bigger is generally newer), returning that number 
+# A function that takes a url from cardkingdom.com, and strips out the
+# identifying number (bigger is generally newer), returning that number
 # as an int
 def urlnumber(url):
     return int(url[url.rfind('/')+1:url.rfind('_')])
@@ -73,7 +73,7 @@ except:
         if card_name == '':
             continue
         # only keep the card with the largest url number
-        if (card_name not in mtg_links or 
+        if (card_name not in mtg_links or
             (urlnumber(card_url) > urlnumber(mtg_links.get(card_name)))):
             mtg_links[card_name] = card_url
             if len(card_name) > max_card_name_length:
@@ -127,6 +127,7 @@ class LogBot(irc.IRCClient):
 
     nickname = "IchiryuBot"
     nicknames = ("IchiryuBot", "Ichiryu", "ichiryu", "ichiryubot")
+    user_to_last_msg = {}
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -167,6 +168,20 @@ class LogBot(irc.IRCClient):
         # Log messages in the channel
         self.logger.log("<%s> %s" % (user, msg))
 
+        # Regex find and replace
+        tokens = msg.split("/")
+        if len(tokens) == 3:
+            who = tokens[0]
+            if who == "s":
+                who = user
+            prev_msg = self.user_to_last_msg.get(who)
+            if prev_msg:
+                new_msg = re.sub(tokens[1], tokens[2], prev_msg)
+                self.say(channel, "%s meant to say: %s" % (who, new_msg))
+                self.user_to_last_msg[who] = new_msg
+        else:
+            self.user_to_last_msg[user] = msg
+
         # imo.im
         if msg.endswith("imo"):
             self.say(channel, ".im")
@@ -179,7 +194,7 @@ class LogBot(irc.IRCClient):
         stripped_chars = charstrip(msg, max_card_name_length)
         for i in range(len(stripped_chars)):
             if stripped_chars[i:] in mtg_links:
-                self.say(channel, 
+                self.say(channel,
                          "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
                 break # so we only say the longest one
 
