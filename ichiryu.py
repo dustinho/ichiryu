@@ -50,7 +50,7 @@ def charstrip(string, max_length=False):
 # identifying number (bigger is generally newer), returning that number 
 # as an int
 def urlnumber(url):
-    return int(url[url.rfind('/')+1:url.rfind('_')])
+    return int(url[url.rfind('/') + 1:url.rfind('_')])
 
 OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-9])")
 OMP_LINK = "http://omploader.org/vMmhmZA"
@@ -69,9 +69,6 @@ except:
     for mtg_card in big_mtg_dict:
         card_name = charstrip(str(mtg_card['name']))
         card_url = str(mtg_card['imgUrl'])
-        # There's a card with no name
-        if card_name == '':
-            continue
         # only keep the card with the largest url number
         if (card_name not in mtg_links or 
             (urlnumber(card_url) > urlnumber(mtg_links.get(card_name)))):
@@ -177,7 +174,7 @@ class LogBot(irc.IRCClient):
 
         # If a message ends with a magic card name, return url to picture
         stripped_chars = charstrip(msg, max_card_name_length)
-        for i in range(len(stripped_chars)):
+        for i in range(len(stripped_chars) - 2): # minimum of 3-character match
             if stripped_chars[i:] in mtg_links:
                 self.say(channel, 
                          "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
