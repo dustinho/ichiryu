@@ -20,8 +20,6 @@ connect to, and file to log to, e.g.:
 
 will log channel #test to the file 'test.log'.
 """
-#for the mtg card database
-import json
 
 # twisted imports
 from twisted.words.protocols import irc
@@ -31,7 +29,7 @@ from twisted.python import log
 # system imports
 import time, sys
 import re
-import pickle
+import pickle, json, yaml
 
 # for lua bot like functionality
 import subprocess
@@ -60,9 +58,9 @@ OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 MAX_LUA_OUTPUT = 322
 
-#MTG card dict.  if there's a pickled copy, load that instead and use it
+# MTG card dict.  if there's a pickled copy, load that instead and use it
 try:
-    mtg = pickle.load(open('mtg.pickle','r'))
+    mtg = pickle.load(open('mtg.pickle'))
     max_card_name_length = mtg['max card name length']
     mtg_links = mtg['mtg links']
 except:
@@ -81,9 +79,6 @@ except:
                 max_card_name_length = len(card_name)
     mtg = {'max card name length':max_card_name_length,'mtg links':mtg_links}
     pickle.dump(mtg,open('mtg.pickle','w'))
-
-channel = "#wonted" # Make sure this has a hash prepended
-logroot = "/home/dustin/ichiryu/wonted-logs/"
 
 class MessageLogger:
     """
@@ -126,13 +121,16 @@ class MessageLogger:
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
 
-    nickname = "IchiryuBot"
-    nicknames = ("IchiryuBot", "Ichiryu", "ichiryu", "ichiryubot")
+    # Load Configuration File
+    config = yaml.load(open('config.json'))
+    nickname = config["nickname"]
+    nicknames = tuple(config["nicknames"])
     user_to_last_msg = {}
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
-        self.logger = MessageLogger(self.factory.logroot, self.factory.channel)
+        self.logger = MessageLogger(self.factory.logroot,
+                                    self.factory.channel)
         self.logger.log("[connected at %s]" %
                         time.asctime(time.localtime(time.time())))
 
@@ -147,6 +145,7 @@ class LogBot(irc.IRCClient):
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
+        print self.factory.channel
         self.join(self.factory.channel)
 
     def joined(self, channel):
@@ -266,9 +265,11 @@ class LogBotFactory(protocol.ClientFactory):
     # the class of the protocol to build when new connection is made
     protocol = LogBot
 
-    def __init__(self, channel, logroot):
+    def __init__(self, channel, logroot, nickname, nicknames):
         self.channel = channel
         self.logroot = logroot
+        self.nickname = nickname
+        self.nicknames = nicknames
 
     def clientConnectionLost(self, connector, reason):
         """If we get disconnected, reconnect to server."""
@@ -280,14 +281,23 @@ class LogBotFactory(protocol.ClientFactory):
 
 
 if __name__ == '__main__':
+    # Load Configuration File
+    config = yaml.load(open('config.json'))
+    nickname = config["nickname"]
+    nicknames = tuple(config["nicknames"])
+    channel = config["channel"]
+    logroot = config["logroot"]
+    server = config["server"]
+    port = config["port"]
+
     # initialize logging
     log.startLogging(sys.stdout)
 
     # create factory protocol and application
-    f = LogBotFactory(channel, logroot)
+    f = LogBotFactory(channel, logroot, nickname, nicknames)
 
     # connect factory to this host and port
-    reactor.connectTCP("irc.rizon.net", 6667, f)
+    reactor.connectTCP(server, port, f)
 
     # run bot
     reactor.run()

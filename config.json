@@ -1,0 +1,8 @@
+{
+  "nickname"  : "IchiryuBot",
+  "channel"   : "#wonted",
+  "nicknames" : ["IchiryuBot", "Ichiryu", "ichiryu", "ichiryubot"],
+  "logroot"   : "/home/dustin/ichiryu/wonted-logs/",
+  "server"    : "irc.rizon.net",
+  "port"      : 6667
+}
