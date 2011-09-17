@@ -166,7 +166,7 @@ class LogBot(irc.IRCClient):
 
         # Regex find and replace
         tokens = msg.split("/")
-        if len(tokens) == 3:
+        if len(tokens) == 3 or len(tokens) == 4:
             who = tokens[0]
             if who == "s":
                 who = user
