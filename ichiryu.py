@@ -31,6 +31,9 @@ import time, sys
 import re
 import pickle, json, yaml
 
+# for lua bot like functionality
+import subprocess
+
 # A function to strip non alpha-numerics from the end of a string, keep only
 # max_length characters from the end (after stripping), and make everything
 # lower case.  This will be used on both the magic dict and incoming messages
@@ -53,6 +56,7 @@ def urlnumber(url):
 OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-9])")
 OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
+MAX_LUA_OUTPUT = 322
 
 # MTG card dict.  if there's a pickled copy, load that instead and use it
 try:
@@ -163,6 +167,29 @@ class LogBot(irc.IRCClient):
 
         # Log messages in the channel
         self.logger.log("<%s> %s" % (user, msg))
+
+        # This bot is also lua_bot
+        if msg.startswith("lua>"):
+            lua_file = open("lua_in.lua", "w")
+            lua_file.write(msg[4:])
+            lua_file.close()
+            lua_guy = subprocess.Popen(["./sandbox.sh"], shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            response = lua_guy.stdout.read(MAX_LUA_OUTPUT*3)
+            err_output = lua_guy.stderr.read(MAX_LUA_OUTPUT*3)
+            if err_output:
+                if err_output.startswith("./sandbox.sh: line 3:"):
+                    response = "Your code exceeded set CPU limits"
+                else:
+                    response = "Error: " + err_output
+            response = response.replace("\t","")
+            response = ", ".join([x for x in response.split("\n") if x])
+            if len(response) > MAX_LUA_OUTPUT:
+                response = (response[:MAX_LUA_OUTPUT-22] +
+                        "... (result truncated)")
+            self.say(channel, "%s: %s" % (user, response))
+            lua_guy.kill()
+            return
 
         # Regex find and replace
         tokens = msg.split("/")
