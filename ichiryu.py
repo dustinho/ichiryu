@@ -242,8 +242,45 @@ class LogBot(irc.IRCClient):
         """Called when an IRC user changes their nickname."""
         old_nick = prefix.split('!')[0]
         new_nick = params[0]
-        self.logger.log("%s is now known as %s" % (old_nick, new_nick))
+        self.logger.log(
+            "%s is now known as %s (%s)" % (old_nick, new_nick, prefix))
 
+    def irc_TOPIC(self, prefix, params):
+        """Called when someone in the channel sets the topic"""
+        user = prefix.split('!')[0]
+        newtopic = params[1]
+        self.logger.log(
+            "%s set the topic to %s (%s)" % (user, newtopic, prefix))
+
+    def irc_JOIN(self, prefix, params):
+        """Called when someone joins a channel."""
+        nick = prefix.split('!')[0]
+        channel = params[-1]
+        if nick == self.nickname:
+            self.joined(channel)
+        else:
+            self.logger.log("%s has joined %s (%s)" % (nick, channel, prefix))
+
+    def irc_PART(self, prefix, params):
+        """Called when a user leaves a channel."""
+        nick = prefix.split('!')[0]
+        channel = params[0]
+        self.logger.log("%s has left %s (%s)" % (nick, channel, prefix))
+
+    def irc_QUIT(self, prefix, params):
+        """Called when a user has quit."""
+        nick = prefix.split('!')[0]
+        self.logger.log("%s has quit [%s] (%s)" % (nick, params[0], prefix))
+
+    def irc_KICK(self, prefix, params):
+        """Called when a user is kicked from a channel."""
+        kicker = prefix.split('!')[0]
+        channel = params[0]
+        kicked = params[1]
+        message = params[-1]
+        self.logger.log(
+            "%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for
+            reason [%s]" % (kicked, kicker, prefix, message))
 
     # For fun, override the method that determines how a nickname is changed on
     # collisions. The default method appends an underscore.
