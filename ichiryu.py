@@ -215,13 +215,15 @@ class LogBot(irc.IRCClient):
         """Called when an IRC user changes their nickname."""
         old_nick = prefix.split('!')[0]
         new_nick = params[0]
-        self.logger.log("%s is now known as %s (%s)" % (old_nick, new_nick, prefix))
+        self.logger.log(
+            "%s is now known as %s (%s)" % (old_nick, new_nick, prefix))
 
     def irc_TOPIC(self, prefix, params):
         """Called when someone in the channel sets the topic"""
         user = prefix.split('!')[0]
         newtopic = params[1]
-        self.logger.log("%s set the topic to %s (%s)" % (user, newtopic, prefix))
+        self.logger.log(
+            "%s set the topic to %s (%s)" % (user, newtopic, prefix))
 
     def irc_JOIN(self, prefix, params):
         """Called when someone joins a channel."""
@@ -249,7 +251,9 @@ class LogBot(irc.IRCClient):
         channel = params[0]
         kicked = params[1]
         message = params[-1]
-        self.logger.log("%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for reason [%s]" % (kicked, kicker, prefix, message))
+        self.logger.log(
+            "%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for
+            reason [%s]" % (kicked, kicker, prefix, message))
 
     # For fun, override the method that determines how a nickname is changed on
     # collisions. The default method appends an underscore.
