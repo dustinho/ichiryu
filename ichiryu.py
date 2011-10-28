@@ -219,12 +219,15 @@ class LogBot(irc.IRCClient):
             self.say(channel, ".im")
 
         # Twitter
-        if msg.endswith("#thinkaboutitluse"):
+        if "#thinkaboutitluse" in msg:
             if len(msg) > 140:
-                self.say(channel, "I'm sorry %s, that Tweet is too long." % (user))
+                self.say(channel, 
+                         "I'm sorry %s, that Tweet is too long." % (user))
             else:
                 status = api.PostUpdate(msg)
-                self.say(channel, "%s: Tweet posted! Check it out at %s" % (user, TWITTER_LINK))
+                self.say(channel, 
+                         "%s: Tweet posted! Check it out at %s" 
+                         % (user, TWITTER_LINK))
 
         # Respond to ompldr links other than this one with this one.
         if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
