@@ -60,11 +60,15 @@ OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9
 MAX_LUA_OUTPUT = 322
 
 TWITTER_LINK = "http://twitter.com/#!/thnkabtitluse"
-twitter_info = yaml.load(open("twitter_info.json"))
-api = twitter.Api(consumer_key = twitter_info["consumer_key"],
-                  consumer_secret = twitter_info["consumer_secret"],
-                  access_token_key = twitter_info["access_token_key"],
-                  access_token_secret = twitter_info["access_token_secret"])
+
+try:
+    twitter_info = yaml.load(open("twitter_info.json"))
+    api = twitter.Api(consumer_key = twitter_info["consumer_key"],
+                      consumer_secret = twitter_info["consumer_secret"],
+                      access_token_key = twitter_info["access_token_key"],
+                      access_token_secret = twitter_info["access_token_secret"])
+except:
+    print "File twitter_info.json not found or incomplete."
                   
 
 # MTG card dict.  if there's a pickled copy, load that instead and use it
