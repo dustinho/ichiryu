@@ -23,18 +23,13 @@ ascii_json_file = open(ASCII_JSON_PATH)
 ascii_json = json.load(ascii_json_file)
 ascii_json_file.close()
 ascii_json_file = open(ASCII_JSON_PATH, 'w')
-print('before:')
-print(ascii_json)
 found = False
 for pair in ascii_json:
-    print(pair)
     if pair['name'] == args.ascii_name:
         pair['text'] = ascii_text
         found = True
         break
 if found == False:
     ascii_json.append({'name': args.ascii_name, 'text': ascii_text})
-print('after:')
-print(ascii_json)
 json.dump(ascii_json, ascii_json_file)
 ascii_json_file.close()
