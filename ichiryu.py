@@ -30,6 +30,7 @@ from twisted.python import log
 import time, sys
 import re
 import pickle, json, yaml
+import twitter
 
 # for lua bot like functionality
 import subprocess
@@ -57,6 +58,18 @@ OMP_REGEX = re.compile("http://ompl(oade)|dr\\.org/[a-zA-Z0-9]{5,8}($|[^a-zA-Z0-
 OMP_LINK = "http://omploader.org/vMmhmZA"
 OMP_LINK_REGEX = re.compile("http://omploa(oade)|der\\.org/vMmhmZA($|[^a-zA-Z0-9])")
 MAX_LUA_OUTPUT = 322
+
+TWITTER_LINK = "http://twitter.com/#!/thnkabtitluse"
+
+try:
+    twitter_info = yaml.load(open("twitter_info.json"))
+    api = twitter.Api(consumer_key = twitter_info["consumer_key"],
+                      consumer_secret = twitter_info["consumer_secret"],
+                      access_token_key = twitter_info["access_token_key"],
+                      access_token_secret = twitter_info["access_token_secret"])
+except:
+    print "File twitter_info.json not found or incomplete."
+                  
 
 # MTG card dict.  if there's a pickled copy, load that instead and use it
 try:
@@ -228,6 +241,17 @@ class LogBot(irc.IRCClient):
         if msg.endswith("imo"):
             self.say(channel, ".im")
 
+        # Twitter
+        if "#thinkaboutitluse" in msg:
+            if len(msg) > 140:
+                self.say(channel, 
+                         "I'm sorry %s, that Tweet is too long." % (user))
+            else:
+                status = api.PostUpdate(msg)
+                self.say(channel, 
+                         "%s: Tweet posted! Check it out at %s" 
+                         % (user, TWITTER_LINK))
+
         # Respond to ompldr links other than this one with this one.
         if len(re.findall(OMP_REGEX,msg)) > len(re.findall(OMP_LINK_REGEX,msg)):
             self.say(channel, "%s: %s" % (user, OMP_LINK))
@@ -302,8 +326,8 @@ class LogBot(irc.IRCClient):
         kicked = params[1]
         message = params[-1]
         self.logger.log(
-            "%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for \
-            reason [%s]" % (kicked, kicker, prefix, message))
+            "%s was kicked by %s (%s) for reason [%s]" % 
+            (kicked, kicker, prefix, message))
 
     # For fun, override the method that determines how a nickname is changed on
     # collisions. The default method appends an underscore.
