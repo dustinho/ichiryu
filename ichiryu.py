@@ -80,6 +80,25 @@ except:
     mtg = {'max card name length':max_card_name_length,'mtg links':mtg_links}
     pickle.dump(mtg,open('mtg.pickle','w'))
 
+# ASCII art dict.  if there's a pickled copy, load that instead and use it
+try:
+    ascii_art = pickle.load(open('ascii.pickle'))
+    max_ascii_name_length = ascii_art['max art name length']
+    ascii_text = ascii_art['ascii text']
+except:
+    ascii_json = open("ascii_art.json")
+    big_ascii_dict = json.load(ascii_json)
+    max_art_name_length = 0
+    ascii_text = {}
+    for art in big_ascii_dict:
+        art_name = charstrip(str(art['name']))
+        art_text = str(art['text'])
+        ascii_text[art_name] = art_text
+        if len(art_name) > max_art_name_length:
+            max_art_name_length = len(art_name)
+    ascii_art = {'max art name length':max_art_name_length,'ascii text':ascii_text}
+    pickle.dump(ascii_art,open('ascii.pickle','w'))
+
 class MessageLogger:
     """
     An independent logger class (because separation of application
@@ -221,6 +240,10 @@ class LogBot(irc.IRCClient):
                          "%s: %s" % (user, mtg_links.get(stripped_chars[i:])))
                 break # so we only say the longest one
 
+        # Ship it.
+        if charstrip(msg).endswith("ship it"):
+            self.say(channel, ascii_text["ship"])
+
         # Otherwise check to see if it is a message directed at me
         if msg.startswith(self.nicknames):
             loglink = self.logger.loglink()
@@ -279,7 +302,7 @@ class LogBot(irc.IRCClient):
         kicked = params[1]
         message = params[-1]
         self.logger.log(
-            "%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for
+            "%s (WTB WORKING WHOIS IN TWISTED) was kicked by %s (%s) for \
             reason [%s]" % (kicked, kicker, prefix, message))
 
     # For fun, override the method that determines how a nickname is changed on
