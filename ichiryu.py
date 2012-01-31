@@ -93,24 +93,14 @@ except:
     mtg = {'max card name length':max_card_name_length,'mtg links':mtg_links}
     pickle.dump(mtg,open('mtg.pickle','w'))
 
-# ASCII art dict.  if there's a pickled copy, load that instead and use it
-try:
-    ascii_art = pickle.load(open('ascii.pickle'))
-    max_ascii_name_length = ascii_art['max art name length']
-    ascii_text = ascii_art['ascii text']
-except:
-    ascii_json = open("ascii_art.json")
-    big_ascii_dict = json.load(ascii_json)
-    max_art_name_length = 0
-    ascii_text = {}
-    for art in big_ascii_dict:
-        art_name = charstrip(str(art['name']))
-        art_text = str(art['text'])
-        ascii_text[art_name] = art_text
-        if len(art_name) > max_art_name_length:
-            max_art_name_length = len(art_name)
-    ascii_art = {'max art name length':max_art_name_length,'ascii text':ascii_text}
-    pickle.dump(ascii_art,open('ascii.pickle','w'))
+# ASCII art dict.
+ascii_json = open("ascii_art.json")
+big_ascii_dict = json.load(ascii_json)
+ascii_text = {}
+for art in big_ascii_dict:
+    art_name = charstrip(str(art['name']))
+    art_text = str(art['text'])
+    ascii_text[art_name] = art_text
 
 class MessageLogger:
     """
