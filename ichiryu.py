@@ -256,7 +256,7 @@ class LogBot(irc.IRCClient):
 
         # Ship it.
         if charstrip(msg).endswith("ship it"):
-            self.say(channel, ascii_text["ship"])
+            self.multisay(channel, ascii_text["ship"])
 
         # Otherwise check to see if it is a message directed at me
         if msg.startswith(self.nicknames):
@@ -267,6 +267,11 @@ class LogBot(irc.IRCClient):
     def say(self, channel, msg):
         self.msg(channel, msg)
         self.logger.log("<%s> %s" % (self.nickname, msg))
+
+    # Takes a multiline text and splits into multiple say()
+    def multisay(self, channel, text):
+        for line in text.split('\n'):
+            self.say(channel, line)
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
